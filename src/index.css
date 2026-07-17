@@ -5,3 +5,8 @@
 body{
   background-color: black;
 }
+
+::selection{
+  background: #a736d1c7;
+  color: rgb(255, 255, 255);
+}
