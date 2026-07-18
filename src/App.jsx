@@ -12,6 +12,7 @@ import Projects from "./components/Projects";
 import Education from "./components/Education";
 import Contact from "./components/Contact";
 import Gallery from "./components/Gallery";
+import Work from "./components/Work";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -37,6 +38,7 @@ function App() {
         <Hero />
         <About />
         <Experience />
+        <Work />
         <Skills />
         <Projects />
         <Education />

@@ -1,7 +1,9 @@
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 import { Mail, ArrowDown } from "lucide-react";
 import HeroCanvas from "./HeroCanvas";
-import { FaGithub, FaLinkedin} from "react-icons/fa";
+import { FaGithub, FaLinkedin } from "react-icons/fa";
+import { useRef } from "react";
+
 const container = {
   hidden: {},
   show: {
@@ -15,14 +17,48 @@ const item = {
 };
 
 export default function Hero() {
+  const sectionRef = useRef(null);
+
+  // raw mouse position within the section
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // spring-smoothed so the glow eases toward the cursor instead of snapping
+  const glowX = useSpring(mouseX, { stiffness: 120, damping: 25, mass: 0.5 });
+  const glowY = useSpring(mouseY, { stiffness: 120, damping: 25, mass: 0.5 });
+
+  const handleMouseMove = (e) => {
+    const rect = sectionRef.current.getBoundingClientRect();
+    mouseX.set(e.clientX - rect.left);
+    mouseY.set(e.clientY - rect.top);
+  };
+
   return (
     <section
       id="home"
+      ref={sectionRef}
+      onMouseMove={handleMouseMove}
       className="mt-8 relative min-h-screen overflow-hidden bg-[#030712]"
     >
-      {/* Background Glow */}
-      <div className="absolute top-20 left-20 w-72 h-72 rounded-full bg-cyan-500/20 blur-[120px]" />
-      <div className="absolute bottom-20 right-20 w-72 h-72 rounded-full bg-purple-500/20 blur-[120px]" />
+      {/* Ambient background glow (static, subtle base layer) */}
+      <div className="absolute top-20 left-20 w-72 h-72 rounded-full bg-cyan-500/10 blur-[120px]" />
+      <div className="absolute bottom-20 right-20 w-72 h-72 rounded-full bg-purple-500/10 blur-[120px]" />
+
+      {/* Mouse-tracking glow */}
+      <motion.div
+        className="pointer-events-none absolute rounded-full"
+        style={{
+          left: glowX,
+          top: glowY,
+          x: "-50%",
+          y: "-50%",
+          width: 500,
+          height: 500,
+          background:
+            "radial-gradient(circle, rgba(56,189,248,0.15) 0%, rgba(168,85,247,0.10) 40%, transparent 70%)",
+          filter: "blur(40px)",
+        }}
+      />
 
       {/* Subtle grid overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:64px_64px]" />
@@ -88,9 +124,9 @@ export default function Hero() {
 
           <motion.div variants={item} className="mt-10 flex items-center gap-5">
             {[
-              { icon: FaGithub, href: "https://github.com" },
-              { icon: FaLinkedin, href: "https://linkedin.com" },
-              { icon: Mail, href: "mailto:hello@example.com" },
+              { icon: FaGithub, href: "https://github.com/Abhiakhade" },
+              { icon: FaLinkedin, href: "https://linkedin.com/in/abhijitakhade/" },
+              { icon: Mail, href: "mailto:abhijitakhade8830@gmail.com" },
             ].map(({ icon: Icon, href }, idx) => (
               <a
                 key={idx}

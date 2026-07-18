@@ -1,38 +1,16 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Briefcase,
   CalendarDays,
   MapPin,
   Sparkles,
-  Globe,
   ArrowUpRight,
+  ChevronDown,
+  ExternalLink,
 } from "lucide-react";
-
-const experiences = [
-  {
-    id: 1,
-    role: "Full Stack Developer",
-    company: "Freelance",
-    type: "Self-employed",
-    location: "India · Remote",
-    period: "Nov 2025 — Mar 2026",
-    duration: "Freelance",
-    icon: Globe,
-    color: "from-cyan-400 to-blue-500",
-    glow: "shadow-cyan-500/20",
-    border: "border-cyan-400/30",
-    dot: "bg-cyan-400",
-    description:
-      "Designing and developing full-stack web applications for clients worldwide. Handling everything from UI/UX and frontend to APIs and database architecture.",
-    responsibilities: [
-      "Building responsive UIs with React.js, Next.js & Tailwind CSS",
-      "Developing RESTful APIs and backend systems using Node.js & Express",
-      "Managing databases with MongoDB and integrating third-party services",
-      "Delivering end-to-end projects from requirement gathering to deployment",
-    ],
-    tags: ["React.js", "Next.js", "Node.js", "MongoDB", "Tailwind CSS"],
-  },
-];
+import { FaGithub, FaLinkedin } from "react-icons/fa";
+import experiences from "../data/experience";
 
 const container = {
   hidden: {},
@@ -46,7 +24,78 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.65, ease: "easeOut" } },
 };
 
+function WorkGallery({ work }) {
+  if (!work || work.length === 0) return null;
+
+  return (
+    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {work.map((item, i) => (
+        <motion.div
+          key={item.title}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.08, duration: 0.4 }}
+          className="group/card relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02]"
+        >
+          {/* Screenshot */}
+          <div className="relative aspect-video overflow-hidden bg-white/5">
+            <img
+              src={item.image}
+              alt={item.title}
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover/card:scale-110"
+            />
+            {/* Overlay on hover */}
+            <div className="absolute inset-0 flex items-center justify-center gap-3 bg-[#030712]/80 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover/card:opacity-100">
+              {item.liveUrl && (
+                <a
+                  href={item.liveUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center gap-1.5 rounded-full bg-cyan-400 px-4 py-2 text-xs font-semibold text-[#030712] transition-transform duration-200 hover:scale-105"
+                >
+                  <ExternalLink size={13} />
+                  Live
+                </a>
+              )}
+              {item.githubUrl && (
+                <a
+                  href={item.githubUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition-transform duration-200 hover:scale-105"
+                >
+                  <Github size={13} />
+                  Code
+                </a>
+              )}
+            </div>
+          </div>
+
+          {/* Caption */}
+          <div className="p-4">
+            <h4 className="text-sm font-semibold text-white">{item.title}</h4>
+            {item.description && (
+              <p className="mt-1 text-xs text-gray-400 leading-relaxed">
+                {item.description}
+              </p>
+            )}
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
 export default function Experience() {
+  const [expanded, setExpanded] = useState(null);
+
+  const toggleExpand = (id) => {
+    setExpanded((prev) => (prev === id ? null : id));
+  };
+
   return (
     <section
       id="experience"
@@ -104,6 +153,8 @@ export default function Experience() {
           >
             {experiences.map((exp) => {
               const Icon = exp.icon;
+              const isOpen = expanded === exp.id;
+
               return (
                 <motion.div
                   key={exp.id}
@@ -199,6 +250,43 @@ export default function Experience() {
                         </span>
                       ))}
                     </div>
+
+                    {/* See My Work toggle */}
+                    {exp.work && exp.work.length > 0 && (
+                      <div className="mt-6 pt-5 border-t border-white/5">
+                        <button
+                          onClick={() => toggleExpand(exp.id)}
+                          className="flex w-full items-center justify-between text-sm font-semibold text-cyan-300 transition-colors duration-300 hover:text-cyan-200"
+                        >
+                          <span className="flex items-center gap-2">
+                            See My Work
+                            <span className="rounded-full bg-cyan-400/10 px-2 py-0.5 text-[11px] text-cyan-400">
+                              {exp.work.length}
+                            </span>
+                          </span>
+                          <motion.span
+                            animate={{ rotate: isOpen ? 180 : 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <ChevronDown size={16} />
+                          </motion.span>
+                        </button>
+
+                        <AnimatePresence>
+                          {isOpen && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.4, ease: "easeInOut" }}
+                              className="overflow-hidden"
+                            >
+                              <WorkGallery work={exp.work} />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )}
                   </motion.div>
                 </motion.div>
               );

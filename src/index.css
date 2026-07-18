@@ -6,7 +6,12 @@ body{
   background-color: black;
 }
 
-::selection{
-  background: #a736d1c7;
-  color: rgb(255, 255, 255);
+::selection {
+  background: #7dd3fc;
+  color: #030712;
+}
+
+::-moz-selection {
+  background: #7dd3fc;
+  color: #070e20;
 }
