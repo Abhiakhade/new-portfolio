@@ -13,6 +13,32 @@ const navLinks = [
 
 const NAV_OFFSET = 80; // height to compensate for the fixed navbar
 
+// Rolls the label out downward and brings a duplicate in from above on
+// hover — a stacked pair of spans inside a clipped box, nudged down by
+// one line-height on hover so the swap reads as continuous motion
+// rather than a cut.
+function NavLinkLabel({ text, isActive }) {
+  return (
+    <span className="relative block h-5 overflow-hidden">
+      <motion.span
+        className="flex flex-col"
+        initial={false}
+        whileHover={{ y: "-1.25rem" }}
+        transition={{ duration: 1, ease: [0.95, 1, 0.35, 1] }}
+      >
+        <span
+          className={`h-5 leading-5 ${
+            isActive ? "text-cyan-400" : "text-gray-300"
+          }`}
+        >
+          {text}
+        </span>
+        <span className="h-5 leading-5 text-cyan-400">{text}</span>
+      </motion.span>
+    </span>
+  );
+}
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
@@ -127,13 +153,12 @@ export default function Navbar() {
                 key={link.name}
                 href={link.href}
                 onClick={(e) => handleNavClick(e, link)}
-                className={`relative text-sm font-medium transition-all duration-300 ${
-                  active === link.name
-                    ? "text-cyan-400"
-                    : "text-gray-300 hover:text-cyan-400"
-                }`}
+                className="relative text-sm font-medium"
               >
-                {link.name}
+                <NavLinkLabel
+                  text={link.name}
+                  isActive={active === link.name}
+                />
 
                 <span
                   className={`absolute -bottom-2 left-0 h-[2px] rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 transition-all duration-300 ${
@@ -158,7 +183,9 @@ export default function Navbar() {
 
             <a
               href="#contact"
-              onClick={(e) => handleNavClick(e, { name: "Contact", href: "#contact" })}
+              onClick={(e) =>
+                handleNavClick(e, { name: "Contact", href: "#contact" })
+              }
               className="rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 px-6 py-2.5 text-sm font-semibold text-[#030712] shadow-lg transition-all duration-300 hover:scale-105"
             >
               Hire Me
@@ -227,7 +254,9 @@ export default function Navbar() {
 
               <a
                 href="#contact"
-                onClick={(e) => handleNavClick(e, { name: "Contact", href: "#contact" })}
+                onClick={(e) =>
+                  handleNavClick(e, { name: "Contact", href: "#contact" })
+                }
                 className="rounded-xl bg-gradient-to-r from-cyan-400 to-purple-500 py-3 text-center font-semibold text-[#030712]"
               >
                 Hire Me

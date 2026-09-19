@@ -13,23 +13,6 @@ import {
   Code2,
 } from "lucide-react";
 import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
-
-// ─────────────────────────────────────────────────────────────
-// EmailJS setup (all three values live in .env, never hard-coded)
-//   1. Create a free account at https://www.emailjs.com
-//   2. Add an Email Service (e.g. Gmail) -> copy the Service ID
-//   3. Create an Email Template -> copy the Template ID
-//      In the template's "To Email" field, put: {{to_email}}
-//      and make sure it points at abhijitakhade8830@gmail.com
-//      (or hard-code that address directly in the template's To field)
-//   4. Account > General -> copy your Public Key
-//   5. Create a .env file in your project root with:
-//        VITE_EMAILJS_SERVICE_ID=your_service_id
-//        VITE_EMAILJS_TEMPLATE_ID=your_template_id
-//        VITE_EMAILJS_PUBLIC_KEY=your_public_key
-//   (Using create-react-app instead of Vite? use REACT_APP_ prefixes
-//    and process.env instead of import.meta.env)
-// ─────────────────────────────────────────────────────────────
 const SERVICE_ID = import.meta.env.service_ybbvnun;
 const TEMPLATE_ID = import.meta.env.template_wt0mdya;
 const PUBLIC_KEY = import.meta.env.TprPtsudSjP_QQY5f;
