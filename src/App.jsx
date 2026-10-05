@@ -37,10 +37,10 @@ function App() {
         <Navbar />
         <Hero />
         <About />
-        <Experience />
         <Work />
         <Skills />
         <Projects />
+        <Experience />
         <Education />
         {/* <Gallery /> */}
         <Contact />

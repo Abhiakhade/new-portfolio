@@ -13,9 +13,28 @@ import {
   Code2,
 } from "lucide-react";
 import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
-const SERVICE_ID = import.meta.env.service_ybbvnun;
-const TEMPLATE_ID = import.meta.env.template_wt0mdya;
-const PUBLIC_KEY = import.meta.env.TprPtsudSjP_QQY5f;
+
+/* ---------- Palette (same as the rest of the site) ----------
+   gold    #FFCB56  brand colour
+   amber   #F59E0B  deeper accent
+   butter  #FFE29A  soft accent
+   ink     #120E06  page background
+   cream   #FFF7E3  main text
+-------------------------------------------------------------- */
+
+/*
+ * EmailJS keys. Vite only exposes env vars that start with VITE_.
+ * Put these in a .env file in your project root (see the note in chat):
+ *   VITE_EMAILJS_SERVICE_ID=service_ybbvnun
+ *   VITE_EMAILJS_TEMPLATE_ID=template_wt0mdya
+ *   VITE_EMAILJS_PUBLIC_KEY=TprPtsudSjP_QQY5f
+ * The fallbacks keep the form working until you add the .env file.
+ */
+const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_ybbvnun";
+const TEMPLATE_ID =
+  import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "template_wt0mdya";
+const PUBLIC_KEY =
+  import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "TprPtsudSjP_QQY5f";
 
 const RECIPIENT_EMAIL = "abhijitakhade8830@gmail.com";
 
@@ -25,56 +44,45 @@ const contactInfo = [
     label: "Email",
     value: "abhijitakhade8830@gmail.com",
     href: "mailto:abhijitakhade8830@gmail.com",
-    color: "from-cyan-400 to-blue-500",
   },
   {
     icon: Phone,
     label: "Phone",
     value: "+91 9209092582",
     href: "tel:+919209092582",
-    color: "from-purple-400 to-violet-600",
   },
   {
     icon: MapPin,
     label: "Location",
     value: "Shahada, Maharashtra, India",
     href: "https://maps.google.com/?q=Shahada,Maharashtra,India",
-    color: "from-emerald-400 to-teal-500",
   },
 ];
 
 const socials = [
-  {
-    icon: FaGithub,
-    label: "GitHub",
-    href: "https://github.com/Abhiakhade",
-    color: "hover:border-gray-400/50 hover:text-white",
-  },
+  { icon: FaGithub, label: "GitHub", href: "https://github.com/Abhiakhade" },
   {
     icon: FaLinkedin,
     label: "LinkedIn",
     href: "https://www.linkedin.com/in/abhijitakhade/",
-    color: "hover:border-blue-400/50 hover:text-blue-400",
   },
-  {
-    icon: FaTwitter,
-    label: "Twitter",
-    href: "https://twitter.com/",
-    color: "hover:border-sky-400/50 hover:text-sky-400",
-  },
+  { icon: FaTwitter, label: "Twitter", href: "https://twitter.com/" },
   {
     icon: Code2,
     label: "LeetCode",
     href: "https://leetcode.com/u/Abhiakhade/",
-    color: "hover:border-orange-400/50 hover:text-orange-400",
   },
 ];
 
+const EASE = [0.22, 1, 0.36, 1];
+
 const inputClass =
-  "w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-gray-600 outline-none transition-all duration-300 focus:border-cyan-400/50 focus:bg-white/[0.07] focus:ring-2 focus:ring-cyan-400/10";
+  "w-full rounded-xl border border-[#FFF7E3]/10 bg-[#FFF7E3]/[0.04] px-4 py-3 text-sm text-[#FFF7E3] placeholder-[#FFF7E3]/30 outline-none transition-all duration-300 focus:border-[#FFCB56]/60 focus:bg-[#FFF7E3]/[0.07] focus:ring-2 focus:ring-[#FFCB56]/15";
 
 const errorInputClass =
   "border-red-400/60 focus:border-red-400/60 focus:ring-red-400/10";
+
+const labelClass = "mb-1.5 block text-sm font-medium text-[#FFF7E3]/70";
 
 const container = {
   hidden: {},
@@ -82,8 +90,13 @@ const container = {
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+  hidden: { opacity: 0, y: 24, filter: "blur(6px)" },
+  show: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.7, ease: EASE },
+  },
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -124,7 +137,7 @@ export default function Contact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Honeypot check — bots fill hidden fields, humans never see this one
+    // Honeypot check: bots fill hidden fields, humans never see this one
     if (formRef.current?.company_website?.value) return;
 
     if (!validate()) return;
@@ -159,39 +172,42 @@ export default function Contact() {
   return (
     <section
       id="contact"
-      className="relative overflow-hidden bg-[#030712] py-24 sm:py-32"
+      className="relative overflow-hidden bg-[#120E06] py-24 sm:py-32"
     >
       {/* Ambient glows */}
-      <div className="absolute top-0 left-1/3 h-96 w-96 rounded-full bg-cyan-500/10 blur-[140px]" />
-      <div className="absolute bottom-0 right-1/3 h-96 w-96 rounded-full bg-purple-500/10 blur-[130px]" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:72px_72px]" />
+      <div className="pointer-events-none absolute left-1/3 top-0 h-96 w-96 rounded-full bg-[#FFCB56]/10 blur-[140px]" />
+      <div className="pointer-events-none absolute bottom-0 right-1/3 h-96 w-96 rounded-full bg-[#F59E0B]/10 blur-[130px]" />
 
-      <div className="relative max-w-6xl mx-auto px-6">
+      <div className="relative mx-auto max-w-6xl px-6">
         {/* Heading */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.7, ease: EASE }}
           className="mb-16 text-center"
         >
-          <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/5 px-4 py-1.5 text-sm text-cyan-300">
+          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#FFCB56]/30 bg-[#FFCB56]/5 px-4 py-1.5 text-sm text-[#FFE29A]">
             <Sparkles size={14} />
             Get in touch
           </p>
-          <h2 className="text-4xl font-bold text-white sm:text-5xl">
-            Contact{" "}
-            <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-              Me
-            </span>
+          <h2 className="bg-gradient-to-r from-[#FFF7E3] via-[#FFCB56] to-[#F59E0B] bg-clip-text text-4xl font-bold text-transparent sm:text-5xl">
+            Contact Me
           </h2>
-          <p className="mt-4 mx-auto max-w-xl text-gray-400">
-            Have a project in mind or want to collaborate? I'm open to any
+          <motion.div
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.9, delay: 0.3, ease: EASE }}
+            className="mx-auto mt-5 h-[3px] w-20 origin-center rounded-full bg-gradient-to-r from-[#FFCB56] to-[#F59E0B]"
+          />
+          <p className="mx-auto mt-5 max-w-xl text-[#FFF7E3]/65">
+            Have a project in mind or want to collaborate? I&apos;m open to any
             opportunities that align with my skills and interests.
           </p>
         </motion.div>
 
-        <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr] items-start">
+        <div className="grid items-start gap-12 lg:grid-cols-[1fr_1.4fr]">
           {/* Left: Info panel */}
           <motion.div
             variants={container}
@@ -202,16 +218,16 @@ export default function Contact() {
           >
             <motion.p
               variants={fadeUp}
-              className="text-gray-400 leading-relaxed"
+              className="leading-relaxed text-[#FFF7E3]/70"
             >
-              If you have any questions or concerns, please don't hesitate to
-              reach out. I am always open to new work opportunities, freelance
-              projects, and exciting collaborations.
+              If you have any questions or concerns, please don&apos;t hesitate
+              to reach out. I am always open to new work opportunities,
+              freelance projects, and exciting collaborations.
             </motion.p>
 
             {/* Contact info cards */}
             <motion.div variants={fadeUp} className="space-y-3 pt-2">
-              {contactInfo.map(({ icon: Icon, label, value, href, color }) => (
+              {contactInfo.map(({ icon: Icon, label, value, href }) => (
                 <motion.a
                   key={label}
                   href={href}
@@ -219,18 +235,14 @@ export default function Contact() {
                   rel="noreferrer"
                   whileHover={{ x: 6 }}
                   transition={{ duration: 0.25 }}
-                  className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.06]"
+                  className="group flex items-center gap-4 rounded-2xl border border-[#FFF7E3]/10 bg-[#FFF7E3]/[0.04] px-5 py-4 transition-[border-color,background-color,box-shadow] duration-300 hover:border-[#FFCB56]/50 hover:bg-[#FFCB56]/[0.06] hover:shadow-[0_12px_40px_rgba(255,203,86,0.12)]"
                 >
-                  <div
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${color} shadow-lg`}
-                  >
-                    <Icon size={18} className="text-[#030712]" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FFCB56] to-[#F59E0B] text-[#120E06] shadow-lg shadow-[#FFCB56]/20 transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110">
+                    <Icon size={18} />
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-600 uppercase tracking-wider">
-                      {label}
-                    </p>
-                    <p className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors duration-200">
+                  <div className="min-w-0">
+                    <p className="text-xs text-[#FFF7E3]/45">{label}</p>
+                    <p className="truncate text-sm font-medium text-[#FFF7E3]/85 transition-colors duration-200 group-hover:text-[#FFCB56]">
                       {value}
                     </p>
                   </div>
@@ -240,11 +252,9 @@ export default function Contact() {
 
             {/* Socials */}
             <motion.div variants={fadeUp} className="pt-2">
-              <p className="mb-4 text-xs uppercase tracking-widest text-gray-600">
-                Find me on
-              </p>
+              <p className="mb-4 text-sm text-[#FFF7E3]/50">Find me on</p>
               <div className="flex gap-3">
-                {socials.map(({ icon: Icon, label, href, color }) => (
+                {socials.map(({ icon: Icon, label, href }) => (
                   <motion.a
                     key={label}
                     href={href}
@@ -253,7 +263,7 @@ export default function Contact() {
                     aria-label={label}
                     whileHover={{ y: -4, scale: 1.1 }}
                     transition={{ duration: 0.25 }}
-                    className={`flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-gray-500 transition-colors duration-300 ${color}`}
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-[#FFF7E3]/15 bg-[#FFF7E3]/[0.04] text-[#FFF7E3]/70 transition-colors duration-300 hover:border-[#FFCB56]/70 hover:bg-[#FFCB56]/10 hover:text-[#FFCB56]"
                   >
                     <Icon size={17} />
                   </motion.a>
@@ -264,14 +274,14 @@ export default function Contact() {
             {/* Availability badge */}
             <motion.div
               variants={fadeUp}
-              className="flex items-center gap-3 rounded-2xl border border-cyan-400/20 bg-cyan-400/5 px-5 py-4"
+              className="flex items-center gap-3 rounded-2xl border border-[#FFCB56]/30 bg-[#FFCB56]/5 px-5 py-4"
             >
-              <span className="h-2.5 w-2.5 rounded-full bg-cyan-400 animate-pulse shrink-0" />
+              <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-[#FFCB56] shadow-[0_0_12px_#FFCB56]" />
               <div>
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-medium text-[#FFF7E3]">
                   Available for freelance
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-[#FFF7E3]/55">
                   Currently open to new projects and collaborations
                 </p>
               </div>
@@ -283,10 +293,13 @@ export default function Contact() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7, delay: 0.15 }}
+            transition={{ duration: 0.8, delay: 0.15, ease: EASE }}
           >
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-7 sm:p-9 backdrop-blur-sm">
-              <h3 className="mb-6 text-lg font-semibold text-white">
+            <div className="relative overflow-hidden rounded-3xl border border-[#FFF7E3]/10 bg-[#FFF7E3]/[0.04] p-7 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-sm sm:p-9">
+              {/* gold light line on top edge */}
+              <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[#FFCB56]/70 to-transparent" />
+
+              <h3 className="mb-6 text-lg font-semibold text-[#FFF7E3]">
                 Send a Message
               </h3>
 
@@ -298,7 +311,7 @@ export default function Contact() {
               >
                 {/* Hidden fields consumed by the EmailJS template */}
                 <input type="hidden" name="to_email" value={RECIPIENT_EMAIL} />
-                {/* Honeypot — kept off-screen, real users never fill this */}
+                {/* Honeypot: kept off-screen, real users never fill this */}
                 <input
                   type="text"
                   name="company_website"
@@ -310,15 +323,17 @@ export default function Contact() {
 
                 {/* Name */}
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Your Name
+                  <label htmlFor="contact-name" className={labelClass}>
+                    Your name
                   </label>
                   <input
+                    id="contact-name"
                     type="text"
                     name="name"
                     value={form.name}
                     onChange={handleChange}
                     placeholder="Abhijit Akhade"
+                    aria-invalid={!!errors.name}
                     className={`${inputClass} ${errors.name ? errorInputClass : ""}`}
                   />
                   {errors.name && (
@@ -328,15 +343,17 @@ export default function Contact() {
 
                 {/* Email */}
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Your Email
+                  <label htmlFor="contact-email" className={labelClass}>
+                    Your email
                   </label>
                   <input
+                    id="contact-email"
                     type="email"
                     name="email"
                     value={form.email}
                     onChange={handleChange}
                     placeholder="you@example.com"
+                    aria-invalid={!!errors.email}
                     className={`${inputClass} ${errors.email ? errorInputClass : ""}`}
                   />
                   {errors.email && (
@@ -348,13 +365,12 @@ export default function Contact() {
 
                 {/* Subject */}
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <label htmlFor="contact-subject" className={labelClass}>
                     Subject{" "}
-                    <span className="normal-case text-gray-700">
-                      (optional)
-                    </span>
+                    <span className="text-[#FFF7E3]/35">(optional)</span>
                   </label>
                   <input
+                    id="contact-subject"
                     type="text"
                     name="subject"
                     value={form.subject}
@@ -366,15 +382,17 @@ export default function Contact() {
 
                 {/* Message */}
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Your Message
+                  <label htmlFor="contact-message" className={labelClass}>
+                    Your message
                   </label>
                   <textarea
+                    id="contact-message"
                     name="message"
                     value={form.message}
                     onChange={handleChange}
                     rows={5}
                     placeholder="Hi Abhijit, I'd love to work with you on..."
+                    aria-invalid={!!errors.message}
                     className={`${inputClass} resize-none ${errors.message ? errorInputClass : ""}`}
                   />
                   {errors.message && (
@@ -390,7 +408,7 @@ export default function Contact() {
                   disabled={status === "loading"}
                   whileHover={{ scale: status === "loading" ? 1 : 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-cyan-400 to-purple-500 py-3.5 text-sm font-semibold text-[#030712] shadow-lg shadow-cyan-500/20 transition-all duration-300 hover:shadow-cyan-500/40 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-[#FFCB56] to-[#F59E0B] py-3.5 text-sm font-semibold text-[#120E06] shadow-lg shadow-[#FFCB56]/20 transition-all duration-300 hover:shadow-[#FFCB56]/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFE29A] disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   <AnimatePresence mode="wait" initial={false}>
                     {status === "loading" ? (
@@ -447,7 +465,7 @@ export default function Contact() {
                   </p>
                 )}
 
-                <p className="text-center text-xs text-gray-600">
+                <p className="text-center text-xs text-[#FFF7E3]/45">
                   I typically respond within 24 hours.
                 </p>
               </form>

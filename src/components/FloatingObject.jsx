@@ -1,547 +1,283 @@
-import { useFrame } from "@react-three/fiber";
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import * as THREE from "three";
+import { useEffect, useRef } from "react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 
-/* =========================================================
-   TECHNOLOGIES
-========================================================= */
-
-const TOOLS = [
-  // Frontend
-  "react",
-  "javascript",
-  "typescript",
-  "html5",
-  "css3",
-  "nextjs",
-  "vuejs",
-  "angularjs",
-  "redux",
-  "tailwindcss",
-  "bootstrap",
-
-  // Backend
-  "nodejs",
-  "express",
-  "java",
-  "spring",
-  "python",
-  "fastapi",
-  "go",
-  "rust",
-
-  // Database
-  "mongodb",
-  "mysql",
-  "postgresql",
-  "redis",
-  "firebase",
-
-  // DevOps
-  "docker",
-  "git",
-  "github",
-  "gitlab",
-  "linux",
-  "nginx",
-
-  // Cloud
-  "amazonwebservices",
-  "googlecloud",
-  "azure",
-
-  // Tools
-  "graphql",
-  "postman",
-  "figma",
-
-  // AI
-  "openai",
-  "tensorflow",
+/* ---------- Floating tech logos ----------
+   x / y   = position in % of the hero
+   size    = tile size in px
+   depth   = mouse-parallax strength (bigger = moves more)
+   dur/amp = float speed (s) and float distance (px)
+   desktop = true  -> hidden on small screens
+------------------------------------------- */
+const DEVICON = "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons";
+const LOGOS = [
+  {
+    name: "React",
+    slug: "react",
+    x: 70,
+    y: 22,
+    size: 84,
+    depth: 1.0,
+    dur: 6.5,
+    amp: -16,
+  },
+  {
+    name: "Tailwind CSS",
+    slug: "tailwindcss",
+    x: 77,
+    y: 46,
+    size: 76,
+    depth: 1.1,
+    dur: 7.5,
+    amp: 14,
+  },
+  {
+    name: "TypeScript",
+    slug: "typescript",
+    x: 60,
+    y: 52,
+    size: 70,
+    depth: 0.9,
+    dur: 6,
+    amp: -14,
+  },
+  {
+    name: "Node.js",
+    slug: "nodejs",
+    x: 89,
+    y: 36,
+    size: 66,
+    depth: 0.7,
+    dur: 8,
+    amp: 12,
+  },
+  {
+    name: "Python",
+    slug: "python",
+    x: 84,
+    y: 68,
+    size: 64,
+    depth: 0.6,
+    dur: 7,
+    amp: -12,
+  },
+  {
+    name: "Docker",
+    slug: "docker",
+    x: 66,
+    y: 79,
+    size: 64,
+    depth: 0.8,
+    dur: 6.8,
+    amp: 14,
+  },
+  {
+    name: "JavaScript",
+    slug: "javascript",
+    x: 55,
+    y: 24,
+    size: 58,
+    depth: 0.6,
+    dur: 7.2,
+    amp: 12,
+  },
+  {
+    name: "MongoDB",
+    slug: "mongodb",
+    x: 93,
+    y: 16,
+    size: 54,
+    depth: 0.5,
+    dur: 8.5,
+    amp: -10,
+  },
+  {
+    name: "Git",
+    slug: "git",
+    x: 95,
+    y: 56,
+    size: 50,
+    depth: 0.4,
+    dur: 9,
+    amp: 10,
+  },
+  {
+    name: "PostgreSQL",
+    slug: "postgresql",
+    x: 88,
+    y: 86,
+    size: 56,
+    depth: 0.5,
+    dur: 7.8,
+    amp: -12,
+  },
+  {
+    name: "HTML5",
+    slug: "html5",
+    x: 64,
+    y: 8,
+    size: 50,
+    depth: 0.5,
+    dur: 8.2,
+    amp: 10,
+  },
+  {
+    name: "CSS3",
+    slug: "css3",
+    x: 81,
+    y: 7,
+    size: 48,
+    depth: 0.4,
+    dur: 9.2,
+    amp: -10,
+  },
+  {
+    name: "Java",
+    slug: "java",
+    x: 48,
+    y: 82,
+    size: 52,
+    depth: 0.4,
+    dur: 8.6,
+    amp: 12,
+    desktop: true,
+  },
+  {
+    name: "Figma",
+    slug: "figma",
+    x: 52,
+    y: 44,
+    size: 50,
+    depth: 0.5,
+    dur: 7.4,
+    amp: -12,
+    desktop: true,
+  },
+  {
+    name: "Redis",
+    slug: "redis",
+    x: 73,
+    y: 93,
+    size: 46,
+    depth: 0.4,
+    dur: 9.5,
+    amp: 10,
+    desktop: true,
+  },
+  {
+    name: "Firebase",
+    slug: "firebase",
+    x: 97,
+    y: 36,
+    size: 44,
+    depth: 0.3,
+    dur: 10,
+    amp: -8,
+    desktop: true,
+  },
 ];
 
-/* =========================================================
-   DEVICON CONFIG
-========================================================= */
+const floatCSS = `@keyframes logoFloat{0%,100%{translate:0 0;rotate:0deg}50%{translate:0 var(--amp);rotate:var(--rot)}}
+.logo-float{animation:logoFloat 7s ease-in-out infinite}
+.logo-float:hover{animation-play-state:paused}
+@media (prefers-reduced-motion: reduce){.logo-float{animation:none!important}}`;
 
-const DEVICON_BASE =
-  "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons";
+function FloatingLogo({ logo, index, nx, ny }) {
+  const { name, slug, x, y, size, depth, dur, amp, desktop } = logo;
 
-/*
- * Some Devicons use a different variant.
+  // 0 = floating, 1 = hovered (parallax eases to a stop)
+  const hover = useMotionValue(0);
+  const hoverSpring = useSpring(hover, { stiffness: 140, damping: 20 });
+
+  const px = useTransform(
+    [nx, hoverSpring],
+    ([n, h]) => n * depth * 34 * (1 - h),
+  );
+  const py = useTransform(
+    [ny, hoverSpring],
+    ([n, h]) => n * depth * 34 * (1 - h),
+  );
+
+  return (
+    <div
+      className={`pointer-events-auto absolute -translate-x-1/2 -translate-y-1/2 ${
+        desktop ? "hidden sm:block" : "opacity-40 sm:opacity-100"
+      }`}
+      style={{ left: `${x}%`, top: `${y}%` }}
+    >
+      <motion.div style={{ x: px, y: py }}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.4 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{
+            type: "spring",
+            stiffness: 120,
+            damping: 14,
+            delay: 0.5 + index * 0.07,
+          }}
+        >
+          <div
+            className="logo-float group relative flex cursor-pointer items-center justify-center rounded-2xl border border-[#FFF7E3]/15 bg-[#FFF7E3]/[0.07] backdrop-blur-md transition-[box-shadow,border-color,background-color,transform] duration-300 hover:scale-110 hover:border-[#FFCB56]/70 hover:bg-[#FFCB56]/10 hover:shadow-[0_0_40px_rgba(255,203,86,0.35)]"
+            style={{
+              width: size,
+              height: size,
+              "--amp": `${amp}px`,
+              "--rot": `${amp > 0 ? 3 : -3}deg`,
+              animationDuration: `${dur}s`,
+              animationDelay: `${-index * 0.9}s`,
+            }}
+            onMouseEnter={() => hover.set(1)}
+            onMouseLeave={() => hover.set(0)}
+          >
+            <img
+              src={`${DEVICON}/${slug}/${slug}-original.svg`}
+              alt={name}
+              draggable={false}
+              className="h-1/2 w-1/2 select-none object-contain"
+            />
+            <span className="pointer-events-none absolute -bottom-8 whitespace-nowrap rounded-full bg-[#120E06]/90 px-3 py-1 text-xs text-[#FFE29A] opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+              {name}
+            </span>
+          </div>
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+}
+
+/**
+ * Floating tech logos.
+ * Drop <FloatingObject /> inside any `relative` section. It fills the section,
+ * lets clicks/hover pass through the empty space, and reacts to the mouse.
  */
-const VARIANT_OVERRIDES = {
-  rust: "plain",
-  go: "original",
-};
+export default function FloatingObject({ logos = LOGOS }) {
+  const wrapRef = useRef(null);
 
-/*
- * Generates the Devicon URL.
- */
-const getLogoUrl = (name) => {
-  const variant =
-    VARIANT_OVERRIDES[name] || "original";
-
-  return `${DEVICON_BASE}/${name}/${name}-${variant}.svg`;
-};
-
-/* =========================================================
-   SVG TEXTURE HOOK
-========================================================= */
-
-function useSvgTexture(
-  url,
-  size = 256
-) {
-  const [texture, setTexture] =
-    useState(null);
+  // normalised mouse position (-1 … 1), smoothed
+  const nxRaw = useMotionValue(0);
+  const nyRaw = useMotionValue(0);
+  const nx = useSpring(nxRaw, { stiffness: 60, damping: 20 });
+  const ny = useSpring(nyRaw, { stiffness: 60, damping: 20 });
 
   useEffect(() => {
-    let disposed = false;
-    let createdTexture = null;
-
-    const image = new Image();
-
-    image.crossOrigin = "anonymous";
-
-    image.onload = () => {
-      if (disposed) return;
-
-      const canvas =
-        document.createElement("canvas");
-
-      canvas.width = size;
-      canvas.height = size;
-
-      const context =
-        canvas.getContext("2d");
-
-      if (!context) return;
-
-      context.clearRect(
-        0,
-        0,
-        size,
-        size
-      );
-
-      /*
-       * Preserve aspect ratio and leave
-       * enough breathing room around the icon.
-       */
-      const scale =
-        Math.min(
-          size / image.width,
-          size / image.height
-        ) * 0.74;
-
-      const width =
-        image.width * scale;
-
-      const height =
-        image.height * scale;
-
-      context.drawImage(
-        image,
-        (size - width) / 2,
-        (size - height) / 2,
-        width,
-        height
-      );
-
-      createdTexture =
-        new THREE.CanvasTexture(canvas);
-
-      createdTexture.colorSpace =
-        THREE.SRGBColorSpace;
-
-      createdTexture.minFilter =
-        THREE.LinearMipmapLinearFilter;
-
-      createdTexture.magFilter =
-        THREE.LinearFilter;
-
-      createdTexture.anisotropy = 4;
-
-      createdTexture.generateMipmaps =
-        true;
-
-      createdTexture.needsUpdate =
-        true;
-
-      setTexture(createdTexture);
+    const onMove = (e) => {
+      const el = wrapRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width) * 2 - 1;
+      const y = ((e.clientY - r.top) / r.height) * 2 - 1;
+      nxRaw.set(Math.max(-1, Math.min(1, x)));
+      nyRaw.set(Math.max(-1, Math.min(1, y)));
     };
-
-    image.onerror = () => {
-      console.warn(
-        `Failed to load technology logo: ${url}`
-      );
-    };
-
-    image.src = url;
-
-    return () => {
-      disposed = true;
-
-      if (createdTexture) {
-        createdTexture.dispose();
-      }
-    };
-  }, [url, size]);
-
-  return texture;
-}
-
-/* =========================================================
-   DETERMINISTIC RANDOM
-========================================================= */
-
-/*
- * Math.random() changes every time the component mounts.
- *
- * This small seeded function keeps the layout stable
- * between renders and page refreshes.
- */
-function seededRandom(seed) {
-  const value =
-    Math.sin(seed * 12.9898) *
-    43758.5453;
-
-  return value -
-    Math.floor(value);
-}
-
-/* =========================================================
-   FLOATING LOGO
-========================================================= */
-
-function LogoMarker({
-  name,
-  index,
-  total,
-  bounds,
-}) {
-  const groupRef = useRef(null);
-  const meshRef = useRef(null);
-
-  const texture =
-    useSvgTexture(getLogoUrl(name));
-
-  /*
-   * Generate all motion values once.
-   */
-  const motion = useMemo(() => {
-    /*
-     * Fibonacci sphere distribution.
-     *
-     * This creates a much more natural
-     * 3D cloud than placing everything
-     * around a flat circle.
-     */
-    const goldenAngle =
-      Math.PI *
-      (3 - Math.sqrt(5));
-
-    const normalized =
-      total <= 1
-        ? 0
-        : index / (total - 1);
-
-    const y =
-      1 -
-      normalized * 2;
-
-    const radius =
-      Math.sqrt(
-        Math.max(0, 1 - y * y)
-      );
-
-    const theta =
-      goldenAngle * index;
-
-    const x =
-      Math.cos(theta) * radius;
-
-    const z =
-      Math.sin(theta) * radius;
-
-    /*
-     * Stable per-logo variation.
-     */
-    const randomA =
-      seededRandom(index + 1);
-
-    const randomB =
-      seededRandom(index + 50);
-
-    const randomC =
-      seededRandom(index + 100);
-
-    return {
-      baseX:
-        x *
-        bounds *
-        (0.72 + randomA * 0.2),
-
-      baseY:
-        y *
-        bounds *
-        0.62,
-
-      baseZ:
-        z *
-        bounds *
-        (0.72 + randomB * 0.2),
-
-      speed:
-        0.16 +
-        randomA * 0.12,
-
-      amplitude:
-        0.25 +
-        randomB * 0.55,
-
-      phase:
-        randomC *
-        Math.PI *
-        2,
-
-      rotationSpeed:
-        (randomA - 0.5) *
-        0.08,
-
-      scale:
-        0.72 +
-        randomB * 0.32,
-
-      mouseStrength:
-        0.08 +
-        randomC * 0.08,
-    };
-  }, [
-    index,
-    total,
-    bounds,
-  ]);
-
-  /* =======================================================
-     ANIMATION
-  ======================================================= */
-
-  useFrame(
-    ({
-      clock,
-      camera,
-      mouse,
-    }) => {
-      if (!groupRef.current) {
-        return;
-      }
-
-      const time =
-        clock.elapsedTime;
-
-      const t =
-        time * motion.speed +
-        motion.phase;
-
-      /* ---------------------------------------------------
-         Natural floating motion
-      --------------------------------------------------- */
-
-      const targetX =
-        motion.baseX +
-        Math.sin(t) *
-          motion.amplitude *
-          0.45;
-
-      const targetY =
-        motion.baseY +
-        Math.sin(t * 1.17) *
-          motion.amplitude;
-
-      const targetZ =
-        motion.baseZ +
-        Math.cos(t * 0.82) *
-          motion.amplitude *
-          0.4;
-
-      /* ---------------------------------------------------
-         Mouse parallax
-      --------------------------------------------------- */
-
-      const parallaxX =
-        mouse.x *
-        motion.mouseStrength;
-
-      const parallaxY =
-        mouse.y *
-        motion.mouseStrength;
-
-      /* ---------------------------------------------------
-         Smooth position
-      --------------------------------------------------- */
-
-      groupRef.current.position.x =
-        THREE.MathUtils.lerp(
-          groupRef.current.position.x,
-          targetX + parallaxX,
-          0.035
-        );
-
-      groupRef.current.position.y =
-        THREE.MathUtils.lerp(
-          groupRef.current.position.y,
-          targetY + parallaxY,
-          0.035
-        );
-
-      groupRef.current.position.z =
-        THREE.MathUtils.lerp(
-          groupRef.current.position.z,
-          targetZ,
-          0.035
-        );
-
-      /* ---------------------------------------------------
-         Billboard
-         
-         Keep the logo facing the camera.
-      --------------------------------------------------- */
-
-      groupRef.current.quaternion.copy(
-        camera.quaternion
-      );
-
-      /* ---------------------------------------------------
-         Subtle rotation
-      --------------------------------------------------- */
-
-      if (meshRef.current) {
-        meshRef.current.rotation.z =
-          Math.sin(t * 0.55) *
-          0.06 +
-          time *
-          motion.rotationSpeed;
-
-        /*
-         * Very subtle mouse tilt.
-         */
-        meshRef.current.rotation.x =
-          mouse.y * 0.025;
-
-        meshRef.current.rotation.y =
-          mouse.x * 0.025;
-      }
-
-      /* ---------------------------------------------------
-         Subtle scale breathing
-      --------------------------------------------------- */
-
-      const targetScale =
-        motion.scale *
-        (1 +
-          Math.sin(t * 1.15) *
-            0.018);
-
-      const scale =
-        THREE.MathUtils.lerp(
-          groupRef.current.scale.x,
-          targetScale,
-          0.035
-        );
-
-      groupRef.current.scale.setScalar(
-        scale
-      );
-    }
-  );
-
-  if (!texture) {
-    return null;
-  }
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, [nxRaw, nyRaw]);
 
   return (
-    <group ref={groupRef}>
-      <mesh ref={meshRef}>
-        <planeGeometry
-          args={[1.65, 1.65]}
-        />
-
-        <meshBasicMaterial
-          map={texture}
-          transparent
-          alphaTest={0.02}
-          depthWrite={false}
-          depthTest
-          side={THREE.DoubleSide}
-          toneMapped={false}
-        />
-      </mesh>
-    </group>
-  );
-}
-
-/* =========================================================
-   MAIN COMPONENT
-========================================================= */
-
-export default function FloatingObject({
-  bounds = 6,
-}) {
-  const groupRef = useRef(null);
-
-  /*
-   * Slow movement of the entire technology cloud.
-   */
-  useFrame(({ clock, mouse }) => {
-    if (!groupRef.current) {
-      return;
-    }
-
-    const time =
-      clock.elapsedTime;
-
-    const targetRotationY =
-      time * 0.018 +
-      mouse.x * 0.035;
-
-    const targetRotationX =
-      mouse.y * 0.025;
-
-    groupRef.current.rotation.y =
-      THREE.MathUtils.lerp(
-        groupRef.current.rotation.y,
-        targetRotationY,
-        1
-      );
-
-    groupRef.current.rotation.x =
-      THREE.MathUtils.lerp(
-        groupRef.current.rotation.x,
-        targetRotationX,
-        1
-      );
-  });
-
-  return (
-    <group ref={groupRef}>
-      {TOOLS.map(
-        (name, index) => (
-          <LogoMarker
-            key={name}
-            name={name}
-            index={index}
-            total={TOOLS.length}
-            bounds={bounds}
-          />
-        )
-      )}
-    </group>
+    <div ref={wrapRef} className="pointer-events-none absolute inset-0 z-[5]">
+      <style>{floatCSS}</style>
+      {logos.map((logo, i) => (
+        <FloatingLogo key={logo.slug} logo={logo} index={i} nx={nx} ny={ny} />
+      ))}
+    </div>
   );
 }
