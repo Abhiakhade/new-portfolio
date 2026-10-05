@@ -5,6 +5,7 @@ import { useRef } from "react";
 import FloatingObject from "./FloatingObject";
 import DistortedImage from "./DistortedImage";
 
+
 const container = {
   hidden: {},
   show: { transition: { staggerChildren: 0.12, delayChildren: 0.3 } },

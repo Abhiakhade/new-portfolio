@@ -1,13 +1,6 @@
 import { useEffect, useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 
-/* ---------- Floating tech logos ----------
-   x / y   = position in % of the hero
-   size    = tile size in px
-   depth   = mouse-parallax strength (bigger = moves more)
-   dur/amp = float speed (s) and float distance (px)
-   desktop = true  -> hidden on small screens
-------------------------------------------- */
 const DEVICON = "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons";
 const LOGOS = [
   {

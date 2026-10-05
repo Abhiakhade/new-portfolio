@@ -2,13 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ---------- Palette (same as the rest of the site) ----------
-   gold    #FFCB56  brand colour
-   amber   #F59E0B  deeper accent
-   butter  #FFE29A  soft accent
-   ink     #120E06  page background
-   cream   #FFF7E3  main text
--------------------------------------------------------------- */
+/* ---------- Palette ---------- */
 
 :root {
   --gold: #ffcb56;
@@ -18,68 +12,27 @@
   --cream: #fff7e3;
 }
 
+/* ---------- Smooth Scrolling ---------- */
+
 html {
   scroll-behavior: smooth;
-  /* keeps #anchor links from hiding under the floating navbar */
   scroll-padding-top: 96px;
-  background-color: var(--ink); /* no white/black flash when overscrolling */
-  scrollbar-width: thin; /* Firefox */
-  scrollbar-color: var(--gold) var(--ink);
-}
-
-/* Stops anything wider than the screen from creating a sideways scrollbar.
-   "clip" (unlike "hidden") keeps position: sticky working. */
-html,
-body {
-  overflow-x: hidden; /* fallback for old browsers */
-  overflow-x: clip;
-  max-width: 100%;
+  background-color: var(--ink);
 }
 
 body {
+  margin: 0;
   background-color: var(--ink);
   color: var(--cream);
+
+  overflow-x: hidden;
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
 }
 
-::selection {
-  background: var(--gold);
-  color: var(--ink);
-}
+/* ---------- Reduced Motion ---------- */
 
-::-moz-selection {
-  background: var(--gold);
-  color: var(--ink);
-}
-
-/* Slim gold scrollbar (Chrome, Edge, Safari) */
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--ink);
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--gold), var(--amber));
-  border-radius: 999px;
-  border: 2px solid var(--ink);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--butter);
-}
-
-/* Visible keyboard focus everywhere, in the brand colour */
-:focus-visible {
-  outline: 2px solid var(--gold);
-  outline-offset: 2px;
-}
-
-/* Respect "reduce motion" in the OS settings */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

@@ -1,14 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-/* ---------- Palette (same as the rest of the site) ----------
-   gold    #FFCB56  brand colour
-   amber   #F59E0B  deeper accent
-   butter  #FFE29A  soft accent
-   ink     #120E06  background
-   cream   #FFF7E3  main text
--------------------------------------------------------------- */
-
 const EASE = [0.76, 0, 0.24, 1];
 
 const STATUS = [
@@ -21,17 +13,6 @@ const STATUS = [
 const statusFor = (n) =>
   [...STATUS].reverse().find((s) => n >= s.at)?.text ?? STATUS[0].text;
 
-/**
- * CountLoader
- * Full-screen loader: a counter climbs 1 → 100 pinned to the left edge,
- * a thin gold rule fills beneath it, and a quiet status line sits beside it.
- * When it reaches 100 the whole screen slides up and away.
- *
- * Props
- *   duration    ms for the count (default 1500)
- *   onComplete  called after the slide-up exit has finished
- *   fullScreen  true = covers the viewport, false = covers its parent
- */
 export default function CountLoader({
   duration = 1500,
   onComplete,
