@@ -14,7 +14,7 @@ import toast from "react-hot-toast";
    gold    #FFCB56  brand colour
    amber   #F59E0B  deeper accent
    butter  #FFE29A  soft accent
-   ink     #120E06  dark background / dark text
+   ink     #120E06  page background / dark text
    cream   #FFF7E3  light text / light glass
    bronze  #B45309  accent used on the light (scrolled) bar for contrast
 ---------------------------------------------- */
@@ -31,6 +31,7 @@ const NAV_LINKS = [
 const NAV_OFFSET = 96;
 const RESUME_URL = "/full-stack.pdf";
 const RESUME_FILENAME = "Abhijit_Akhade_Resume.pdf";
+
 const EASE = [0.76, 0, 0.24, 1];
 const STAGGER = 0.03;
 
@@ -38,7 +39,7 @@ const FOCUS =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFCB56]";
 
 /* ------------------------------------------------------------------ */
-/* Monogram with scroll-progress ring                                  */
+/* Monogram with scroll-progress ring                                 */
 /* ------------------------------------------------------------------ */
 
 function Monogram({ progress, onClick, light }) {
@@ -62,6 +63,7 @@ function Monogram({ progress, onClick, light }) {
             <stop offset="100%" stopColor="#F59E0B" />
           </linearGradient>
         </defs>
+
         <circle
           cx="22"
           cy="22"
@@ -70,6 +72,7 @@ function Monogram({ progress, onClick, light }) {
           stroke={light ? "rgba(18,14,6,0.12)" : "rgba(255,247,227,0.12)"}
           strokeWidth="2"
         />
+
         <motion.circle
           cx="22"
           cy="22"
@@ -81,23 +84,33 @@ function Monogram({ progress, onClick, light }) {
           style={{ pathLength: progress }}
         />
       </svg>
+
       <span aria-hidden="true">A</span>
     </a>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* Letter-by-letter roll                                               */
+/* Letter-by-letter roll                                              */
 /* ------------------------------------------------------------------ */
 
 const letterVariants = {
   rest: (i) => ({
     y: "0%",
-    transition: { duration: 0.4, ease: EASE, delay: i * STAGGER },
+    transition: {
+      duration: 0.4,
+      ease: EASE,
+      delay: i * STAGGER,
+    },
   }),
+
   hover: (i) => ({
     y: "-50%",
-    transition: { duration: 0.9, ease: EASE, delay: i * STAGGER },
+    transition: {
+      duration: 0.9,
+      ease: EASE,
+      delay: i * STAGGER,
+    },
   }),
 };
 
@@ -109,6 +122,7 @@ function RollingLabel({ text, isActive, reduceMotion, light, className = "" }) {
     : isActive
       ? "text-[#FFF7E3]"
       : "text-[#FFF7E3]/60";
+
   const twin = light ? "text-[#B45309]" : "text-[#FFCB56]";
 
   if (reduceMotion) {
@@ -137,6 +151,72 @@ function RollingLabel({ text, isActive, reduceMotion, light, className = "" }) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Live Date + Time                                                   */
+/* ------------------------------------------------------------------ */
+
+function LiveDateTime({ light, mobile = false }) {
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNow(new Date());
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const timeText = now.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  const dateText = now.toLocaleDateString([], {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
+  if (mobile) {
+    return (
+      <div
+        className="relative mt-6 flex flex-col items-start select-none"
+        aria-label={`Current local time ${timeText}, ${dateText}`}
+      >
+        <time className="text-3xl font-bold tracking-tight text-[#FFCB56] tabular-nums">
+          {timeText}
+        </time>
+
+        <time className="mt-1 text-xs font-medium uppercase tracking-[0.2em] text-[#FFF7E3]/55">
+          {dateText}
+        </time>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`hidden md:flex flex-col justify-center select-none ${
+        light ? "text-[#120E06]" : "text-[#FFF7E3]"
+      }`}
+      aria-label={`Current local time ${timeText}, ${dateText}`}
+    >
+      <time className="text-base font-bold tracking-tight leading-none tabular-nums">
+        {timeText}
+      </time>
+
+      <time
+        className={`mt-1 text-[9px] font-medium uppercase tracking-[0.15em] leading-none ${
+          light ? "text-[#120E06]/55" : "text-[#FFF7E3]/55"
+        }`}
+      >
+        {dateText}
+      </time>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Navbar                                                              */
 /* ------------------------------------------------------------------ */
 
@@ -152,65 +232,105 @@ export default function NavbarIsland() {
   const navTimer = useRef(0);
 
   const { scrollY, scrollYProgress } = useScroll();
+
   const progress = useSpring(scrollYProgress, {
     stiffness: 120,
     damping: 30,
     restDelta: 0.001,
   });
 
-  useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 20));
+  useMotionValueEvent(scrollY, "change", (y) => {
+    setScrolled(y > 20);
+  });
 
-  /* Scroll spy */
+  /* -------------------------------------------------------------- */
+  /* Scroll spy                                                     */
+  /* -------------------------------------------------------------- */
+
   useEffect(() => {
     const sections = NAV_LINKS.map((l) =>
       document.querySelector(l.href),
     ).filter(Boolean);
+
     if (!sections.length) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (isNavigating.current) return;
+
         const hit = entries.find((e) => e.isIntersecting);
+
         const link =
           hit && NAV_LINKS.find((l) => l.href === `#${hit.target.id}`);
-        if (link) setActive(link.name);
+
+        if (link) {
+          setActive(link.name);
+        }
       },
-      { rootMargin: "-45% 0px -50% 0px", threshold: 0 },
+      {
+        rootMargin: "-45% 0px -50% 0px",
+        threshold: 0,
+      },
     );
 
     sections.forEach((s) => observer.observe(s));
+
     return () => observer.disconnect();
   }, []);
 
-  /* Menu: scroll lock + Escape */
+  /* -------------------------------------------------------------- */
+  /* Menu: scroll lock + Escape                                     */
+  /* -------------------------------------------------------------- */
+
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
-    const onKey = (e) => e.key === "Escape" && setMenuOpen(false);
+
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+      }
+    };
+
     window.addEventListener("keydown", onKey);
+
     return () => {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", onKey);
     };
   }, [menuOpen]);
 
-  useEffect(() => () => window.clearTimeout(navTimer.current), []);
+  useEffect(() => {
+    return () => window.clearTimeout(navTimer.current);
+  }, []);
+
+  /* -------------------------------------------------------------- */
+  /* Navigation                                                     */
+  /* -------------------------------------------------------------- */
 
   const goTo = useCallback(
     (e, link) => {
       e.preventDefault();
+
       const section = document.querySelector(link.href);
+
       if (!section) return;
 
       isNavigating.current = true;
+
       window.clearTimeout(navTimer.current);
-      navTimer.current = window.setTimeout(
-        () => (isNavigating.current = false),
-        900,
-      );
+
+      navTimer.current = window.setTimeout(() => {
+        isNavigating.current = false;
+      }, 900);
 
       const top =
         section.getBoundingClientRect().top + window.scrollY - NAV_OFFSET;
-      window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
+
+      window.scrollTo({
+        top,
+        behavior: reduceMotion ? "auto" : "smooth",
+      });
+
       window.history.pushState(null, "", link.href);
 
       setActive(link.name);
@@ -219,12 +339,25 @@ export default function NavbarIsland() {
     [reduceMotion],
   );
 
+  /* -------------------------------------------------------------- */
+  /* Go top                                                         */
+  /* -------------------------------------------------------------- */
+
   const goTop = (e) => {
     e.preventDefault();
-    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+
+    window.scrollTo({
+      top: 0,
+      behavior: reduceMotion ? "auto" : "smooth",
+    });
+
     setActive(NAV_LINKS[0].name);
     setMenuOpen(false);
   };
+
+  /* -------------------------------------------------------------- */
+  /* Resume                                                         */
+  /* -------------------------------------------------------------- */
 
   const onResume = () => {
     toast.success("Resume download started");
@@ -233,16 +366,26 @@ export default function NavbarIsland() {
 
   const contact = NAV_LINKS.find((l) => l.name === "Contact");
 
-  // Light cream frosted-glass theme once the page is scrolled (dark while the mobile menu is open).
+  /*
+   * Light cream frosted-glass theme once the page is scrolled.
+   * Dark while the mobile menu is open.
+   */
   const light = scrolled && !menuOpen;
 
   return (
     <>
+      {/* ========================================================== */}
+      {/* DESKTOP / MAIN NAVBAR                                      */}
+      {/* ========================================================== */}
+
       <header className="pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center px-4">
         <motion.div
           initial={{ y: -80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          transition={{
+            duration: 0.6,
+            ease: [0.22, 1, 0.36, 1],
+          }}
           className={`pointer-events-auto flex w-full items-center justify-between gap-2 rounded-full border p-1.5 backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-500 ease-out md:w-auto md:justify-start md:gap-3 ${
             light
               ? "border-[#120E06]/10 bg-[#FFF7E3]/70 shadow-[0_8px_32px_rgba(18,14,6,0.18)] backdrop-saturate-150"
@@ -251,9 +394,13 @@ export default function NavbarIsland() {
                 : "border-[#FFF7E3]/10 bg-[#FFF7E3]/[0.04] shadow-[0_8px_30px_rgba(0,0,0,0.25)]"
           }`}
         >
+          {/* Logo */}
           <Monogram progress={progress} onClick={goTop} light={light} />
 
-          {/* Desktop links */}
+          {/* ====================================================== */}
+          {/* DESKTOP LINKS                                           */}
+          {/* ====================================================== */}
+
           <nav aria-label="Primary" className="hidden md:block">
             <ul
               className="flex items-center"
@@ -261,6 +408,7 @@ export default function NavbarIsland() {
             >
               {NAV_LINKS.map((link) => {
                 const isActive = active === link.name;
+
                 return (
                   <li
                     key={link.name}
@@ -299,6 +447,7 @@ export default function NavbarIsland() {
                         reduceMotion={reduceMotion}
                         light={light}
                       />
+
                       {isActive && (
                         <span
                           className={`absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full ${
@@ -313,7 +462,17 @@ export default function NavbarIsland() {
             </ul>
           </nav>
 
-          {/* Desktop actions */}
+          {/* ====================================================== */}
+          {/* LIVE TIME + DATE — DESKTOP                             */}
+          {/* Appears after Contact                                  */}
+          {/* ====================================================== */}
+
+          <LiveDateTime light={light} />
+
+          {/* ====================================================== */}
+          {/* DESKTOP ACTIONS                                        */}
+          {/* ====================================================== */}
+
           <div className="hidden items-center gap-1.5 md:flex">
             <a
               href={RESUME_URL}
@@ -338,7 +497,10 @@ export default function NavbarIsland() {
             </a>
           </div>
 
-          {/* Mobile toggle */}
+          {/* ====================================================== */}
+          {/* MOBILE TOGGLE                                           */}
+          {/* ====================================================== */}
+
           <button
             type="button"
             onClick={() => setMenuOpen((o) => !o)}
@@ -354,10 +516,21 @@ export default function NavbarIsland() {
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
                 key={menuOpen ? "x" : "menu"}
-                initial={{ opacity: 0, rotate: -90 }}
-                animate={{ opacity: 1, rotate: 0 }}
-                exit={{ opacity: 0, rotate: 90 }}
-                transition={{ duration: 0.18 }}
+                initial={{
+                  opacity: 0,
+                  rotate: -90,
+                }}
+                animate={{
+                  opacity: 1,
+                  rotate: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  rotate: 90,
+                }}
+                transition={{
+                  duration: 0.18,
+                }}
                 className="flex"
               >
                 {menuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -367,7 +540,10 @@ export default function NavbarIsland() {
         </motion.div>
       </header>
 
-      {/* Full-screen mobile menu */}
+      {/* ========================================================== */}
+      {/* FULL-SCREEN MOBILE MENU                                    */}
+      {/* ========================================================== */}
+
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -378,42 +554,68 @@ export default function NavbarIsland() {
             transition={{ duration: 0.25 }}
             className="fixed inset-0 z-40 flex flex-col justify-between bg-[#120E06]/95 px-8 pb-10 pt-28 backdrop-blur-2xl md:hidden"
           >
-            {/* soft gold glow */}
+            {/* Soft gold glow */}
             <div className="pointer-events-none absolute -right-24 top-1/3 h-80 w-80 rounded-full bg-[#FFCB56]/10 blur-[120px]" />
 
-            <nav aria-label="Mobile" className="relative flex flex-col gap-2">
-              {NAV_LINKS.map((link, i) => {
-                const isActive = active === link.name;
-                return (
-                  <div key={link.name} className="overflow-hidden">
-                    <motion.a
-                      href={link.href}
-                      onClick={(e) => goTo(e, link)}
-                      aria-current={isActive ? "true" : undefined}
-                      initial={{ y: "100%" }}
-                      animate={{ y: 0 }}
-                      transition={{
-                        duration: 0.5,
-                        ease: EASE,
-                        delay: 0.08 + i * 0.06,
-                      }}
-                      className={`block py-1 text-4xl font-semibold tracking-tight transition-colors ${
-                        isActive
-                          ? "text-[#FFCB56]"
-                          : "text-[#FFF7E3]/80 hover:text-[#FFE29A]"
-                      }`}
-                    >
-                      {link.name}
-                    </motion.a>
-                  </div>
-                );
-              })}
-            </nav>
+            {/* ==================================================== */}
+            {/* MOBILE NAVIGATION                                     */}
+            {/* ==================================================== */}
+
+            <div className="relative">
+              <nav aria-label="Mobile" className="relative flex flex-col gap-2">
+                {NAV_LINKS.map((link, i) => {
+                  const isActive = active === link.name;
+
+                  return (
+                    <div key={link.name} className="overflow-hidden">
+                      <motion.a
+                        href={link.href}
+                        onClick={(e) => goTo(e, link)}
+                        aria-current={isActive ? "true" : undefined}
+                        initial={{ y: "100%" }}
+                        animate={{ y: 0 }}
+                        transition={{
+                          duration: 0.5,
+                          ease: EASE,
+                          delay: 0.08 + i * 0.06,
+                        }}
+                        className={`block py-1 text-4xl font-semibold tracking-tight transition-colors ${
+                          isActive
+                            ? "text-[#FFCB56]"
+                            : "text-[#FFF7E3]/80 hover:text-[#FFE29A]"
+                        }`}
+                      >
+                        {link.name}
+                      </motion.a>
+                    </div>
+                  );
+                })}
+              </nav>
+
+              {/* ================================================== */}
+              {/* LIVE TIME + DATE — MOBILE                         */}
+              {/* ================================================== */}
+
+              <LiveDateTime light={false} mobile />
+            </div>
+
+            {/* ==================================================== */}
+            {/* MOBILE ACTIONS                                       */}
+            {/* ==================================================== */}
 
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45, duration: 0.4 }}
+              initial={{
+                opacity: 0,
+                y: 16,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              transition={{
+                delay: 0.45,
+                duration: 0.4,
+              }}
               className="relative flex flex-col gap-3"
             >
               <a
@@ -425,6 +627,7 @@ export default function NavbarIsland() {
                 <Download size={18} aria-hidden="true" />
                 Download resume
               </a>
+
               <a
                 href={contact.href}
                 onClick={(e) => goTo(e, contact)}

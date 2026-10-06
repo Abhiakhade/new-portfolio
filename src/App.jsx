@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import Loader from "./components/Loader";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
-import HeroCanvas from "./components/HeroCanvas";
-import FloatingObject from "./components/FloatingObject";
 import CustomCursor from "./components/Customcursor";
 import About from "./components/About";
 import Experience from "./components/Experience";
@@ -11,8 +9,8 @@ import Skills from "./components/Skills";
 import Projects from "./components/Projects";
 import Education from "./components/Education";
 import Contact from "./components/Contact";
-import Gallery from "./components/Gallery";
 import Work from "./components/Work";
+import BigName from "./components/BigName";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -44,6 +42,7 @@ function App() {
         <Education />
         {/* <Gallery /> */}
         <Contact />
+        <BigName />
       </main>
     </>
   );

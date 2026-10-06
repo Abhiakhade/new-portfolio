@@ -38,3 +38,8 @@ body {
     scroll-behavior: auto;
   }
 }
+
+::selection{
+  background: #000000b7;
+  color: #ffcb56;
+}
