@@ -1,8 +1,3 @@
-/**
- * Project images are static files in /public/projects/.
- * Replace any .svg with your own screenshot (e.g. dhaani.png) and update the
- * `image` path below. Add a deployed link to `liveUrl` to show the "Live" button.
- */
 
 const projects = [
   {

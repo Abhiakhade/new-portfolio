@@ -31,6 +31,7 @@ const filters = ["All", "Full Stack", "AI/ML", "Frontend", "Backend"];
 const INITIAL_VISIBLE = 6;
 const EASE = [0.22, 1, 0.36, 1];
 
+
 const projects = [
   {
     id: 1,
@@ -58,7 +59,7 @@ const projects = [
     icon: Building2,
     tags: ["React", "Next.js", "Tailwind CSS", "MongoDB", "Node.js"],
     github: `${GH}/dhaani-properties`,
-    live: null,
+    live: "https://dhaani-properties.vercel.app/",
     featured: true,
     screenshot: preview("dhaani-properties"),
   },
@@ -133,7 +134,7 @@ const projects = [
     icon: NotebookPen,
     tags: ["React", "Firebase Auth", "Express", "MongoDB Atlas"],
     github: `${GH}/Notes-tech`,
-    live: null,
+    live: "https://notes-tech-gilt.vercel.app/",
     featured: true,
     screenshot: preview("Notes-tech"),
   },
@@ -148,7 +149,7 @@ const projects = [
     icon: LayoutDashboard,
     tags: ["TypeScript", "React", "Dashboard"],
     github: `${GH}/three-d-bharat`,
-    live: null,
+    live: "https://3dbharat.vercel.app/",
     featured: false,
     screenshot: preview("three-d-bharat"),
   },
@@ -177,7 +178,7 @@ const projects = [
     icon: Briefcase,
     tags: ["JavaScript", "React"],
     github: `${GH}/job-portal`,
-    live: null,
+    live: "https://naukri-jobs.vercel.app/",
     featured: false,
     screenshot: preview("job-portal"),
   },
@@ -253,6 +254,7 @@ const projects = [
     screenshot: preview("resume"),
   },
 ];
+
 
 const container = {
   hidden: {},

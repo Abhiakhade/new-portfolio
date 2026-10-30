@@ -14,7 +14,7 @@ const experiences = [
     company: "Freelance",
     type: "Self-employed",
     location: "India · Remote",
-    period: "Nov 2025 — Mar 2026",
+    period: "Mar 2026*",
     duration: "Freelance",
     icon: Globe,
     color: "from-cyan-400 to-blue-500",
