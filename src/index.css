@@ -1,8 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
-/* ---------- Palette ---------- */
+@import "tailwindcss";
+
+
+/* ---------- Global Palette ---------- */
 
 :root {
   --gold: #ffcb56;
@@ -10,25 +10,102 @@
   --butter: #ffe29a;
   --ink: #120e06;
   --cream: #fff7e3;
-}
 
-/* ---------- Smooth Scrolling ---------- */
-
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 96px;
-  background-color: var(--ink);
-}
-
-body {
-  margin: 0;
+  color-scheme: dark;
   background-color: var(--ink);
   color: var(--cream);
 
-  overflow-x: hidden;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------- Global Reset ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  min-width: 320px;
+  scroll-behavior: smooth;
+  scroll-padding-top: 96px;
+  background-color: var(--ink);
+  overflow-x: clip;
+}
+
+body {
+  width: 100%;
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+
+  background-color: var(--ink);
+  color: var(--cream);
+
+  overflow-x: clip;
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------- Media Defaults ---------- */
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+img,
+video {
+  height: auto;
+}
+
+/* ---------- Selection ---------- */
+
+::selection {
+  background: #000000b7;
+  color: var(--gold);
+}
+
+/* ---------- Scrollbar ---------- */
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold) var(--ink);
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ink);
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 20px;
+  background: linear-gradient(
+    180deg,
+    var(--gold),
+    var(--amber)
+  );
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--butter);
+}
+
+/* ---------- Focus Accessibility ---------- */
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
 }
 
 /* ---------- Reduced Motion ---------- */
@@ -37,9 +114,21 @@ body {
   html {
     scroll-behavior: auto;
   }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-::selection{
-  background: #000000b7;
-  color: #ffcb56;
+/* ---------- Small Screen Improvements ---------- */
+
+@media (max-width: 640px) {
+  html {
+    scroll-padding-top: 76px;
+  }
 }

@@ -1,50 +1,47 @@
-import { useEffect, useState } from "react";
-import Loader from "./components/Loader";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import CustomCursor from "./components/Customcursor";
 import About from "./components/About";
-import Experience from "./components/Experience";
+import Work from "./components/Work";
 import Skills from "./components/Skills";
 import Projects from "./components/Projects";
+import Experience from "./components/Experience";
 import Education from "./components/Education";
 import Contact from "./components/Contact";
-import Work from "./components/Work";
 import BigName from "./components/BigName";
+import CountLoader from "./components/Loader";
 
 function App() {
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (loading) {
-    return <Loader />;
-  }
-
   return (
-    <>
+    <div className="relative isolate min-h-screen w-full min-w-0 overflow-x-clip bg-[#120E06] text-[#FFF7E3]">
+      {/* Navigation */}
       <Navbar />
+      <CountLoader />
+
+      {/* Custom cursor */}
       <CustomCursor />
-      <main>
-        <Navbar />
+
+      {/* Main content */}
+      <main className="relative min-w-0 w-full">
         <Hero />
+
         <About />
+
         <Work />
+
         <Skills />
+
         <Projects />
+
         <Experience />
+
         <Education />
-        {/* <Gallery /> */}
+
         <Contact />
+
         <BigName />
       </main>
-    </>
+    </div>
   );
 }
 

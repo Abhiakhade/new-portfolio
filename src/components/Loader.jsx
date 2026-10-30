@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 const EASE = [0.76, 0, 0.24, 1];
 
@@ -10,8 +10,9 @@ const STATUS = [
   { at: 90, text: "Almost there" },
 ];
 
-const statusFor = (n) =>
-  [...STATUS].reverse().find((s) => n >= s.at)?.text ?? STATUS[0].text;
+const statusFor = (value) =>
+  [...STATUS].reverse().find((status) => value >= status.at)?.text ??
+  STATUS[0].text;
 
 export default function CountLoader({
   duration = 1500,
@@ -23,40 +24,92 @@ export default function CountLoader({
 
   const startRef = useRef(null);
   const rafRef = useRef(null);
+  const timeoutRef = useRef(null);
   const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete; // always the latest callback, never restarts the count
 
-  // count 1 → 100
+  const shouldReduceMotion = useReducedMotion();
+
+  // Always use the latest callback without restarting the loader.
   useEffect(() => {
-    const reduce = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    const total = reduce ? Math.min(duration, 600) : duration;
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
-    const step = (timestamp) => {
-      if (startRef.current === null) startRef.current = timestamp;
-      const progress = Math.min((timestamp - startRef.current) / total, 1);
-      // ease-out so it rushes then settles on 100
-      const eased = 1 - Math.pow(1 - progress, 2.2);
-      setCount(Math.max(1, Math.round(eased * 100)));
+  // Progress animation: 1 → 100
+  useEffect(() => {
+    let cancelled = false;
 
-      if (progress < 1) {
-        rafRef.current = requestAnimationFrame(step);
-      } else {
-        setTimeout(() => setVisible(false), 250); // brief pause on 100
+    const totalDuration = shouldReduceMotion
+      ? Math.min(Math.max(duration, 0), 600)
+      : Math.max(duration, 0);
+
+    const complete = () => {
+      if (cancelled) return;
+
+      setCount(100);
+
+      timeoutRef.current = window.setTimeout(
+        () => {
+          if (!cancelled) {
+            setVisible(false);
+          }
+        },
+        shouldReduceMotion ? 0 : 250,
+      );
+    };
+
+    if (totalDuration === 0) {
+      complete();
+    } else {
+      const step = (timestamp) => {
+        if (cancelled) return;
+
+        if (startRef.current === null) {
+          startRef.current = timestamp;
+        }
+
+        const progress = Math.min(
+          (timestamp - startRef.current) / totalDuration,
+          1,
+        );
+
+        const eased = 1 - Math.pow(1 - progress, 2.2);
+        const nextCount = Math.min(100, Math.max(1, Math.round(eased * 100)));
+
+        setCount(nextCount);
+
+        if (progress < 1) {
+          rafRef.current = requestAnimationFrame(step);
+        } else {
+          complete();
+        }
+      };
+
+      rafRef.current = requestAnimationFrame(step);
+    }
+
+    return () => {
+      cancelled = true;
+
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current);
       }
     };
-    rafRef.current = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [duration]);
+  }, [duration, shouldReduceMotion]);
 
-  // no page scroll behind a full-screen loader
+  // Prevent background scrolling during full-screen loading.
   useEffect(() => {
     if (!fullScreen || !visible) return;
-    const prev = document.body.style.overflow;
+
+    const previousOverflow = document.body.style.overflow;
+
     document.body.style.overflow = "hidden";
+
     return () => {
-      document.body.style.overflow = prev;
+      document.body.style.overflow = previousOverflow;
     };
   }, [fullScreen, visible]);
 
@@ -68,49 +121,74 @@ export default function CountLoader({
           role="status"
           aria-live="polite"
           aria-label={`Loading, ${count} percent`}
-          initial={{ y: 0 }}
-          exit={{ y: "-100%" }}
-          transition={{ duration: 0.9, ease: EASE }}
+          initial={shouldReduceMotion ? false : { y: 0 }}
+          exit={shouldReduceMotion ? { opacity: 0 } : { y: "-100%" }}
+          transition={{
+            duration: shouldReduceMotion ? 0.15 : 0.9,
+            ease: EASE,
+          }}
           className={`${
             fullScreen ? "fixed" : "absolute"
-          } inset-0 z-[200] flex flex-col justify-end overflow-hidden bg-[#120E06] px-6 pb-10 sm:px-12 sm:pb-14`}
+          } inset-0 z-[200] flex flex-col justify-end overflow-hidden bg-[#120E06] px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-20 sm:px-8 sm:pb-12 md:px-12 md:pb-14`}
         >
-          {/* soft gold glow */}
-          <div className="pointer-events-none absolute -left-24 bottom-0 h-96 w-96 rounded-full bg-[#FFCB56]/15 blur-[140px]" />
+          {/* Background glow */}
+          <div className="pointer-events-none absolute -left-24 bottom-0 h-64 w-64 rounded-full bg-[#FFCB56]/15 blur-[100px] sm:h-96 sm:w-96 sm:blur-[140px]" />
 
-          {/* top-left brand + status */}
-          <div className="absolute left-6 top-8 flex items-center gap-3 sm:left-12 sm:top-12">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-[#FFCB56] shadow-[0_0_12px_#FFCB56]" />
-            <span className="text-sm text-[#FFF7E3]/60">
-              {statusFor(count)}
-            </span>
+          <div className="pointer-events-none absolute -right-32 top-0 h-56 w-56 rounded-full bg-[#F59E0B]/10 blur-[100px] sm:h-80 sm:w-80 sm:blur-[130px]" />
+
+          {/* Brand and status */}
+          <div className="absolute left-4 top-[max(1.5rem,env(safe-area-inset-top))] flex items-center gap-3 sm:left-8 sm:top-10 md:left-12 md:top-12">
+            <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-[#FFCB56] shadow-[0_0_12px_#FFCB56]" />
+
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={statusFor(count)}
+                initial={shouldReduceMotion ? false : { opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={shouldReduceMotion ? undefined : { opacity: 0, y: -5 }}
+                transition={{ duration: 0.2 }}
+                className="text-xs text-[#FFF7E3]/60 sm:text-sm"
+              >
+                {statusFor(count)}
+              </motion.span>
+            </AnimatePresence>
           </div>
 
-          {/* counter */}
+          {/* Counter */}
           <div className="relative flex items-end">
-            <span
-              className="font-mono font-bold leading-none text-[#FFF7E3]"
-              style={{
-                fontVariantNumeric: "tabular-nums",
-                fontSize: "clamp(5rem, 14vw, 10rem)",
-              }}
-            >
+            <span className="font-mono text-[clamp(5rem,18vw,10rem)] font-bold leading-none tabular-nums text-[#FFF7E3]">
               {count}
             </span>
-            <span
-              className="mb-2 ml-2 font-mono font-bold leading-none text-[#FFCB56] sm:mb-4"
-              style={{ fontSize: "clamp(1.5rem, 4vw, 3rem)" }}
-            >
+
+            <span className="mb-2 ml-1.5 font-mono text-[clamp(1.5rem,5vw,3rem)] font-bold leading-none text-[#FFCB56] sm:mb-4 sm:ml-2">
               %
             </span>
           </div>
 
-          {/* progress rule */}
-          <div className="relative mt-6 h-[3px] w-full overflow-hidden rounded-full bg-[#FFF7E3]/10">
+          {/* Progress bar */}
+          <div
+            className="relative mt-5 h-[3px] w-full overflow-hidden rounded-full bg-[#FFF7E3]/10 sm:mt-6"
+            role="progressbar"
+            aria-label="Loading progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={count}
+          >
             <div
-              className="h-full origin-left rounded-full bg-gradient-to-r from-[#FFCB56] to-[#F59E0B] shadow-[0_0_16px_rgba(255,203,86,0.7)]"
+              className="h-full rounded-full bg-gradient-to-r from-[#FFCB56] to-[#F59E0B] shadow-[0_0_16px_rgba(255,203,86,0.7)]"
               style={{ width: `${count}%` }}
             />
+          </div>
+
+          {/* Footer */}
+          <div className="relative mt-4 flex items-center justify-between">
+            <span className="text-[10px] uppercase tracking-[0.2em] text-[#FFF7E3]/30 sm:text-xs">
+              Abhijit Akhade
+            </span>
+
+            <span className="text-[10px] text-[#FFF7E3]/40 sm:text-xs">
+              Please wait...
+            </span>
           </div>
         </motion.div>
       )}

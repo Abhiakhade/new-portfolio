@@ -29,7 +29,7 @@ const NAV_LINKS = [
 ];
 
 const NAV_OFFSET = 96;
-const RESUME_URL = "/full-stack.pdf";
+const RESUME_URL = "./My-resume.pdf";
 const RESUME_FILENAME = "Abhijit_Akhade_Resume.pdf";
 
 const EASE = [0.76, 0, 0.24, 1];
@@ -196,7 +196,7 @@ function LiveDateTime({ light, mobile = false }) {
 
   return (
     <div
-      className={`hidden md:flex flex-col justify-center select-none ${
+      className={`hidden lg:flex flex-col justify-center select-none ${
         light ? "text-[#120E06]" : "text-[#FFF7E3]"
       }`}
       aria-label={`Current local time ${timeText}, ${dateText}`}
@@ -283,7 +283,11 @@ export default function NavbarIsland() {
   /* -------------------------------------------------------------- */
 
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? "hidden" : "";
+    const previousOverflow = document.body.style.overflow;
+
+    if (menuOpen) {
+      document.body.style.overflow = "hidden";
+    }
 
     const onKey = (e) => {
       if (e.key === "Escape") {
@@ -294,7 +298,7 @@ export default function NavbarIsland() {
     window.addEventListener("keydown", onKey);
 
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKey);
     };
   }, [menuOpen]);
@@ -364,7 +368,10 @@ export default function NavbarIsland() {
     setMenuOpen(false);
   };
 
-  const contact = NAV_LINKS.find((l) => l.name === "Contact");
+  const contact = NAV_LINKS.find((l) => l.name === "Contact") ?? {
+    name: "Contact",
+    href: "#contact",
+  };
 
   /*
    * Light cream frosted-glass theme once the page is scrolled.
@@ -386,7 +393,7 @@ export default function NavbarIsland() {
             duration: 0.6,
             ease: [0.22, 1, 0.36, 1],
           }}
-          className={`pointer-events-auto flex w-full items-center justify-between gap-2 rounded-full border p-1.5 backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-500 ease-out md:w-auto md:justify-start md:gap-3 ${
+          className={`pointer-events-auto flex w-full items-center justify-between gap-2 rounded-full border p-1.5 backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-500 ease-out lg:w-auto lg:justify-start lg:gap-3 ${
             light
               ? "border-[#120E06]/10 bg-[#FFF7E3]/70 shadow-[0_8px_32px_rgba(18,14,6,0.18)] backdrop-saturate-150"
               : menuOpen
@@ -401,7 +408,7 @@ export default function NavbarIsland() {
           {/* DESKTOP LINKS                                           */}
           {/* ====================================================== */}
 
-          <nav aria-label="Primary" className="hidden md:block">
+          <nav aria-label="Primary" className="hidden lg:block">
             <ul
               className="flex items-center"
               onMouseLeave={() => setHovered(null)}
@@ -473,7 +480,7 @@ export default function NavbarIsland() {
           {/* DESKTOP ACTIONS                                        */}
           {/* ====================================================== */}
 
-          <div className="hidden items-center gap-1.5 md:flex">
+          <div className="hidden items-center gap-1.5 lg:flex">
             <a
               href={RESUME_URL}
               download={RESUME_FILENAME}
@@ -507,7 +514,7 @@ export default function NavbarIsland() {
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
-            className={`grid h-11 w-11 place-items-center rounded-full transition-colors md:hidden ${FOCUS} ${
+            className={`grid h-11 w-11 place-items-center rounded-full transition-colors lg:hidden ${FOCUS} ${
               light
                 ? "bg-[#FFCB56]/30 text-[#120E06]"
                 : "bg-[#FFCB56]/10 text-[#FFF7E3]"
@@ -552,7 +559,7 @@ export default function NavbarIsland() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-40 flex flex-col justify-between bg-[#120E06]/95 px-8 pb-10 pt-28 backdrop-blur-2xl md:hidden"
+            className="fixed inset-0 z-40 flex max-h-dvh min-h-dvh flex-col justify-between gap-10 overflow-y-auto overscroll-contain bg-[#120E06]/95 px-6 pb-[calc(2.5rem+env(safe-area-inset-bottom))] pt-[calc(7rem+env(safe-area-inset-top))] backdrop-blur-2xl sm:px-8 lg:hidden"
           >
             {/* Soft gold glow */}
             <div className="pointer-events-none absolute -right-24 top-1/3 h-80 w-80 rounded-full bg-[#FFCB56]/10 blur-[120px]" />
@@ -579,7 +586,7 @@ export default function NavbarIsland() {
                           ease: EASE,
                           delay: 0.08 + i * 0.06,
                         }}
-                        className={`block py-1 text-4xl font-semibold tracking-tight transition-colors ${
+                        className={`block py-1 text-[clamp(2.25rem,8vw,3.5rem)] font-semibold tracking-tight transition-colors ${
                           isActive
                             ? "text-[#FFCB56]"
                             : "text-[#FFF7E3]/80 hover:text-[#FFE29A]"
